@@ -1,0 +1,88 @@
+version: "3.8"
+
+x-base-service:
+  &base-service
+  image: bitnami/spark:3.3
+  environment: &base-env
+    TZ: "Asia/Shanghai"
+    SPARK_MODE: "worker"
+    SPARK_MASTER_URL: "spark://master-spark:7077"
+    SPARK_WORKER_MEMORY: "1G"
+    SPARK_WORKER_CORES: "1"
+  networks:
+    - hdfs-network
+  deploy:
+    replicas: 1
+
+services:
+  master-spark:
+    image: bitnami/spark:3.3
+    hostname: master-spark
+    networks:
+      - hdfs-network
+    environment:
+      - TZ=Asia/Shanghai
+      - SPARK_MODE=master
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == ubuntu-1  # 将 master 部署到 ubuntu-1
+    ports:
+      - "8080:8080" # Spark Management UI
+  
+  w01-spark:
+    <<: *base-service
+    hostname: w01-spark
+    networks:
+      - hdfs-network
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == ubuntu-1  # 将 worker 1 部署到 ubuntu-1
+    depends_on:
+      - master-spark
+
+  w02-spark:
+    <<: *base-service
+    hostname: w02-spark
+    networks:
+      - hdfs-network
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == ubuntu-2  # 将 worker 2 部署到 ubuntu-1
+    depends_on:
+      - master-spark
+
+  w03-spark:
+    <<: *base-service
+    hostname: w03-spark
+    networks:
+      - hdfs-network
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == ubuntu-3  # 将 worker 3 部署到 ubuntu-2
+    depends_on:
+      - master-spark
+
+  w04-spark:
+    <<: *base-service
+    hostname: w04-spark
+    networks:
+      - hdfs-network
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == ubuntu-4  # 将 worker 4 部署到 ubuntu-2
+    depends_on:
+      - master-spark
+
+networks:
+  hdfs-network:
+    external: true

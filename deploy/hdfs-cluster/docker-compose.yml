@@ -1,0 +1,102 @@
+version: "3.8"
+
+services:
+  nn-hdfs:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    hostname: nn-hdfs
+    networks:
+      - hdfs-network
+    volumes:
+      - /home/ubuntu/bigdata/volumes-nn:/hadoop/dfs/name
+    environment:
+      - CLUSTER_NAME=hdfs-cluster
+    env_file:
+      - ./hdfs.env
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == ubuntu-1
+    ports:
+    - "9870:9870"  # 将容器内的 9870 端口映射到主机的 9870 端口
+
+  dn01-hdfs:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    hostname: dn01-hdfs
+    networks:
+      - hdfs-network
+    volumes:
+      - /home/ubuntu/bigdata/volumes-dn01:/hadoop/dfs/data
+    env_file:
+      - ./hdfs.env
+    environment:
+      SERVICE_PRECONDITION: "nn-hdfs:9870"
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == ubuntu-1
+    depends_on:
+      - nn-hdfs
+
+  dn02-hdfs:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    hostname: dn02-hdfs
+    networks:
+      - hdfs-network
+    volumes:
+      - /home/ubuntu/bigdata/volumes-dn02:/hadoop/dfs/data
+    env_file:
+      - ./hdfs.env
+    environment:
+      SERVICE_PRECONDITION: "nn-hdfs:9870"
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == ubuntu-2
+    depends_on:
+      - nn-hdfs
+
+  dn03-hdfs:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    hostname: dn03-hdfs
+    networks:
+      - hdfs-network
+    volumes:
+      - /home/ubuntu/bigdata/volumes-dn03:/hadoop/dfs/data
+    env_file:
+      - ./hdfs.env
+    environment:
+      SERVICE_PRECONDITION: "nn-hdfs:9870"
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == ubuntu-3
+    depends_on:
+      - nn-hdfs
+
+  dn04-hdfs:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    hostname: dn04-hdfs
+    networks:
+      - hdfs-network
+    volumes:
+      - /home/ubuntu/bigdata/volumes-dn04:/hadoop/dfs/data
+    env_file:
+      - ./hdfs.env
+    environment:
+      SERVICE_PRECONDITION: "nn-hdfs:9870"
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == ubuntu-4
+    depends_on:
+      - nn-hdfs
+
+networks:
+  hdfs-network:
+    external: true
+
