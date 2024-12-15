@@ -1,8 +1,8 @@
-version: "3.8"
+version: "2.4"
 
 x-base-service:
   &base-service
-  image: bitnami/spark:3.3
+  image: linu/spark:v1
   environment: &base-env
     TZ: "Asia/Shanghai"
     SPARK_MODE: "worker"
@@ -10,79 +10,151 @@ x-base-service:
     SPARK_WORKER_MEMORY: "1G"
     SPARK_WORKER_CORES: "1"
   networks:
-    - hdfs-network
-  deploy:
-    replicas: 1
+    - mixed_cluster
 
 services:
   master-spark:
-    image: bitnami/spark:3.3
+    image: linu/spark:v1
     hostname: master-spark
     networks:
-      - hdfs-network
+      - mixed_cluster
     environment:
       - TZ=Asia/Shanghai
       - SPARK_MODE=master
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-          - node.hostname == ubuntu-1  # 将 master 部署到 ubuntu-1
+    volumes:
+      - /root/workspace:/root
     ports:
       - "8080:8080" # Spark Management UI
+    cpuset: "28-31" 
   
   w01-spark:
     <<: *base-service
     hostname: w01-spark
     networks:
-      - hdfs-network
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-          - node.hostname == ubuntu-1  # 将 worker 1 部署到 ubuntu-1
+      - mixed_cluster
     depends_on:
       - master-spark
-
+    cpuset: "1" 
   w02-spark:
     <<: *base-service
     hostname: w02-spark
     networks:
-      - hdfs-network
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-          - node.hostname == ubuntu-2  # 将 worker 2 部署到 ubuntu-1
+      - mixed_cluster
     depends_on:
       - master-spark
-
+    cpuset: "2" 
   w03-spark:
     <<: *base-service
     hostname: w03-spark
     networks:
-      - hdfs-network
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-          - node.hostname == ubuntu-3  # 将 worker 3 部署到 ubuntu-2
+      - mixed_cluster
     depends_on:
       - master-spark
-
+    cpuset: "3" 
   w04-spark:
     <<: *base-service
     hostname: w04-spark
     networks:
-      - hdfs-network
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-          - node.hostname == ubuntu-4  # 将 worker 4 部署到 ubuntu-2
+      - mixed_cluster
     depends_on:
       - master-spark
-
+    cpuset: "4" 
+  w05-spark:
+    <<: *base-service
+    hostname: w05-spark
+    networks:
+      - mixed_cluster
+    depends_on:
+      - master-spark
+    cpuset: "5" 
+  w06-spark:
+    <<: *base-service
+    hostname: w06-spark
+    networks:
+      - mixed_cluster
+    depends_on:
+      - master-spark
+    cpuset: "6" 
+  w07-spark:
+    <<: *base-service
+    hostname: w07-spark
+    networks:
+      - mixed_cluster
+    depends_on:
+      - master-spark
+    cpuset: "7" 
+  w08-spark:
+    <<: *base-service
+    hostname: w08-spark
+    networks:
+      - mixed_cluster
+    depends_on:
+      - master-spark
+    cpuset: "8" 
+  w09-spark:
+    <<: *base-service
+    hostname: w09-spark
+    networks:
+      - mixed_cluster
+    depends_on:
+      - master-spark
+    cpuset: "9" 
+  w10-spark:
+    <<: *base-service
+    hostname: w10-spark
+    networks:
+      - mixed_cluster
+    depends_on:
+      - master-spark
+    cpuset: "10" 
+  w11-spark:
+    <<: *base-service
+    hostname: w11-spark
+    networks:
+      - mixed_cluster
+    depends_on:
+      - master-spark
+    cpuset: "11"
+  w12-spark:
+    <<: *base-service
+    hostname: w12-spark
+    networks:
+      - mixed_cluster
+    depends_on:
+      - master-spark
+    cpuset: "12"
+  w13-spark:
+    <<: *base-service
+    hostname: w13-spark
+    networks:
+      - mixed_cluster
+    depends_on:
+      - master-spark
+    cpuset: "13"
+  w14-spark:
+    <<: *base-service
+    hostname: w14-spark
+    networks:
+      - mixed_cluster
+    depends_on:
+      - master-spark
+    cpuset: "14"
+  w15-spark:
+    <<: *base-service
+    hostname: w15-spark
+    networks:
+      - mixed_cluster
+    depends_on:
+      - master-spark
+    cpuset: "15"
+  w16-spark:
+    <<: *base-service
+    hostname: w16-spark
+    networks:
+      - mixed_cluster
+    depends_on:
+      - master-spark
+    cpuset: "16"
 networks:
-  hdfs-network:
+  mixed_cluster:
     external: true
