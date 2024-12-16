@@ -8,8 +8,8 @@ import time
 
 spark = SparkSession.builder \
     .appName("PySpark_RF_Hyperparameter_Tuning") \
-    .config("spark.executor.memory", "4g") \
-    .config("spark.driver.memory", "2g") \
+    .config("spark.default.parallelism", "48") \
+    .config("spark.sql.shuffle.partitions", "48") \
     .getOrCreate()
 
 file_path = '/home/zkw/pyspark_1/Agrofood_co2_emission_synthetic_500k.csv'
