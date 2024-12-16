@@ -65,7 +65,7 @@ docker build -t linu/spark:v1 .
 
 ### 网络创建
 
-因为Spark需要通过HDFS访问文件，因此先通过`docker network create`命令创建`mixed_cluster brige`，使两类集群可以互访，命令如下：
+因为Spark需要通过HDFS访问文件，因此先通过`docker network create`命令创建网络 `mixed_cluster`，使Spark能够访问HDFS，命令如下：
 
 ```bash
 docker network create mixed_cluster

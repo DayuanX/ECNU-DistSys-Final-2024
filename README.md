@@ -9,7 +9,7 @@
 负载以 Client 模式运行在 Spark Master 容器中。
 
 ### 采集数据
-1. 通过 cAdvisor + Prometheus + Grafana 监控 docker 的各项资源占用，主要监控网络占用，可以自动绘制图表。
+1. 通过 cAdvisor + Prometheus + Grafana 监控 docker 的各项资源占用，主要监控网络占用和CPU占用，可以自动绘制图表。
 2. 实验代码中最后输出总训练时长; Spark UI 中也可以看到。手动导入数据用 python 脚本绘制折线图。
 
 ### 1. 固定 worker 配置，调整 worker 的数量
@@ -21,10 +21,9 @@
 
 分别测试 1, 2, 4, 8, 16 个 worker 下的表现。
 
-#### 预期结果与可能结论
+#### 预期结果
 理想情况下，每一份 worker 都能把自身资源完整利用上，执行速度随 worker 数量线性增长，则执行时间随 worker 数量的增长反比例下降。但考虑到调度开销、任务启动开销等由 Spark 框架带来的不可避免的开销，实际情况肯定不会这么完美，只能是接近，执行时间会比预期要长一些。
 
-由于我们使用 CPU 密集型的任务进行测试，由于 Spark 的设计，我们应能得到"执行时间随 worker 数量的增加而近似反比例降低" 的结果，能够体现 Spark 对于横向扩展的良好支持。但是大量的 worker 也会带来大量的网络流量，可能会成为瓶颈。
 
 ### 2. 固定资源池，在相同负载下逐渐增加 worker 数量
 
@@ -41,7 +40,7 @@
 | 8  | 2  | 4  |
 | 16 | 1  | 2  |
 
-#### 预期结果与可能结论
+#### 预期结果
 虽然总的核心和内存数量不变，但是考虑到 Spark 的调度开销，执行时间应会随着 worker 数量的增加而增加，但并不明显，应能表明 Spark 的设计比较优良。
 
 这次实验中也包含了一个单机 16 核心 32GB 内存的情况，执行时间很短，也能表明 Spark 对纵向扩展的支持非常好。
@@ -55,11 +54,37 @@
 
 并行度倍率：总核数的 3 倍(spark.default.parallelism = 3 × 核数), 此处即固定为 48 并行度。 
 
-#### 预期结果与可能结论
+#### 预期结果
 
 理想情况中，随着数据集的明显增大，训练时间也应明显增大。但是由于我们的数据量比较小，实际上可能算不上 CPU 密集型的任务，反而成为 IO 密集型。实际的训练时间变长的幅度远达不到数据集这种10倍的增长幅度。在数据集过小的情况下，各个 worker 的利用率应该都比较低，任务常被 Master 拖累。
 
 应能说明 worker 数量要与实际负载匹配，将小负载分散到大量 worker 中并不能带来可观的时间减小。
+
+## 实验结果及分析
+
+### 1. 固定 worker 配置，调整 worker 的数量
+![实验1-spark截图](experiment/pic/exp1_main.png)
+![实验1-时间](experiment/pic/manual/Figure_1.png)
+
+我们使用 CPU 密集型的任务进行测试，由于 Spark 的设计，我们得到了"执行时间随 worker 数量的增加而近似反比例降低" 的结果。首先这能够体现 Spark 对于横向扩展的良好支持。但是, 随着 worker 数量的增加，调度和通信的开销明显增大，计算时间的占比明显降低, 性能提升受到限制。虽然 16 worker 比 8 worker 的执行时间更短，但是其加速幅度已经很不明显。说明我们应该根据任务规模合理设置 worker 数量和并行度，避免资源浪费。worker 过多时应考虑系统开销是否抵消了性能收益。
+
+我们观察 2/4/16 workers 下的 cpu 占用:
+![exp1-2w-total](experiment/pic/exp1/exp1_2worker_total.jpg)
+![exp1-4w-total](experiment/pic/exp1/exp1_4worker_total.jpg)
+![exp1-16w-total](experiment/pic/exp1/exp1_16worker_total.jpg)
+从图片中可以看出，在 2 workers 的情况下，CPU 占用的峰值可以稳定在 90% 左右，可以说此时 cpu 占用已经达到饱和了。但是在 4 workers 的情况下，4 个容器的 CPU 占用分布在 70%~90%, 已经不太饱和了。在 16 workers 的情况下，每个容器的 CPU 占用最高只有 60% 左右，CPU 资源并没有被完全利用上, 也能解释 16 workers 提升不明显的现象。
+
+
+### 2. 固定资源池，在相同负载下逐渐增加 worker 数量
+
+![实验2-spark截图](experiment/pic/exp2_main.png)
+![实验2-时间](experiment/pic/manual/Figure_2.png)
+
+
+
+
+### 3. 固定 worker 数量，调整数据集大小
+
 
 
 ## PPT 大纲
