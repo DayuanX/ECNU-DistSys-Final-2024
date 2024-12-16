@@ -29,3 +29,6 @@ RUN pip3 install  numpy \
 # 设置入口脚本
 ENTRYPOINT [ "/opt/bitnami/scripts/spark/entrypoint.sh" ]
 CMD [ "/opt/bitnami/scripts/spark/run.sh" ]
+
+
+
